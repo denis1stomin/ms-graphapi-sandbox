@@ -1,0 +1,27 @@
+{
+  "name": "onedrive-helper",
+  "version": "0.1.0",
+  "description": "Helper functionality to use onedrive API",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/denis1stomin/ms-graphapi-sandbox.git"
+  },
+  "keywords": [
+    "microsoft",
+    "onedrive",
+    "graphapi"
+  ],
+  "author": "Denis I",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/denis1stomin/ms-graphapi-sandbox/issues"
+  },
+  "homepage": "https://github.com/denis1stomin/ms-graphapi-sandbox#readme",
+  "dependencies": {
+    "@microsoft/microsoft-graph-client": "^1.0.0"
+  }
+}
