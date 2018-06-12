@@ -1,0 +1,175 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"> 
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>O365 CORS Sample</title>
+    <style> 
+      body { 
+        font-family:'Segoe UI'; 
+      } 
+
+      .paddedElement {
+        margin-top: 5px; 
+      }
+
+      .hidden {
+        visibility: hidden; 
+      }
+    </style>
+  </head>
+  <body>
+    <h2>O365 CORS Sample</h2>
+    <label for="TxtOauthToken">OAuth Token: </label><input type="text" id="TxtOauthToken" size="80"/>
+    <br />
+    <label for="endpointUrl">Endpoint URL: </label><input type="text" id="endpoint" size="80" /> 
+    <br />
+    <input type="button" class="paddedElement" id="getToken" value="Get Token"> 
+    <input type="button" class="paddedElement" id="doCors" value="Make CORS Request" visibility="hidden" />
+    <br /> 
+    <br />
+    <label for="results" class="hidden paddedElement" id="resultHeading">Results: </label>
+    <br />
+    <label id="debugMessage"></label>
+    <pre id="results"></pre>
+    <script type="text/javascript"> 
+      (function (window) { 
+        var isCorsCompatible = function() {
+          try
+          {
+              var xhr = new XMLHttpRequest();
+              xhr.open("GET", getEndpointUrl());
+              xhr.setRequestHeader("authorization", "Bearer " + token);
+              xhr.setRequestHeader("accept", "application/json");
+              xhr.onload = function () {
+                 // CORS is working.
+                 console.log("Browser is CORS compatible."); 
+              }
+              xhr.send();
+          }
+          catch (e)
+          {
+              if (e.number == -2147024891)
+              {
+                  console.log("Internet Explorer users must use Internet Explorer 11 with MS15-032: Cumulative security update for Internet Explorer (KB3038314) installed for this sample to work.");
+              }
+              else
+              {
+                  console.log("An unexpected error occurred. Please refresh the page."); 
+              }
+
+          }
+        };
+
+        var urlParameterExtraction = new (function () { 
+          function splitQueryString(queryStringFormattedString) { 
+            var split = queryStringFormattedString.split('&'); 
+
+            // If there are no parameters in URL, do nothing.
+            if (split == "") {
+              return {};
+            } 
+
+            var results = {}; 
+
+            // If there are parameters in URL, extract key/value pairs. 
+            for (var i = 0; i < split.length; ++i) { 
+              var p = split[i].split('=', 2); 
+              if (p.length == 1) 
+                results[p[0]] = ""; 
+              else 
+                results[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " ")); 
+            } 
+
+            return results; 
+          } 
+
+          // Split the query string (after removing preceding '#'). 
+          this.queryStringParameters = splitQueryString(window.location.hash.substr(1)); 
+        })(); 
+
+        var token = urlParameterExtraction.queryStringParameters['access_token']; 
+
+        document.getElementById("endpoint").value = "https://graph.microsoft.com/v1.0/me"; 
+
+        if (token == undefined) {
+          document.getElementById("TxtOauthToken").value = "Click \"Get Token\" to trigger sign-in after entering the endpoint you want to use."; 
+
+          document.getElementById("doCors").style.visibility = "hidden"; 
+        }
+        else {
+          document.getElementById("TxtOauthToken").value = token;
+          document.getElementById("doCors").style.visibility = "visible"; 
+          document.getElementById("getToken").style.display = "none"; 
+        }
+
+        // Constructs the authentication URL and directs the user to it. 
+        function requestToken() { 
+          // Change clientId and replyUrl to reflect your app's values 
+          // found on the Configure tab in the Azure Management Portal.
+          var clientId    = '6f9caa6b-b5cf-467d-a326-f25cb0aca8f2';
+          var replyUrl    = 'https://www.google.ru';
+          var resource    = 'https://graph.microsoft.com';
+
+          var authServer  = 'https://login.microsoftonline.com/common/oauth2/authorize?';
+          //var endpointUrl = getEndpointUrl();
+
+          var responseType = 'token'; 
+
+          var url = authServer + 
+                    "response_type=" + encodeURI(responseType) + "&" + 
+                    "client_id=" + encodeURI(clientId) + "&" + 
+                    "resource=" + encodeURI(resource) + "&" + 
+                    "redirect_uri=" + encodeURI(replyUrl); 
+
+          window.location = url; 
+        } 
+
+        document.getElementById("getToken").onclick = requestToken; 
+
+        function getEndpointUrl() { 
+          return document.getElementById("endpoint").value; 
+        } 
+
+        function getFilesFromO365() { 
+          document.getElementById("results").textContent = ""; 
+
+          // Check browser compatbility. Check console output for details.
+          isCorsCompatible(); 
+
+          try 
+          { 
+            var xhr = new XMLHttpRequest(); 
+            xhr.open("GET", getEndpointUrl()); 
+
+            // The APIs require an OAuth access token in the Authorization header, formatted like this: 'Authorization: Bearer <token>'. 
+            xhr.setRequestHeader("Authorization", "Bearer " + token); 
+
+            // Process the response from the API.  
+            xhr.onload = function () { 
+              document.getElementById("resultHeading").style.visibility = "visible"; 
+
+              if (xhr.status == 200) { 
+                var formattedResponse = JSON.stringify(JSON.parse(xhr.response), undefined, 2);
+                document.getElementById("results").textContent = formattedResponse; 
+              } else { 
+                document.getElementById("results").textContent = "HTTP " + xhr.status + "<br>" + xhr.response; 
+              } 
+            } 
+
+            // Make request.
+            xhr.send(); 
+          } 
+          catch (err) 
+          { 
+            document.getElementById("resultHeading").style.visibility = "visible"; 
+            document.getElementById("results").textContent = "Exception: " + err.message; 
+          } 
+        } 
+
+        document.getElementById("doCors").onclick = getFilesFromO365; 
+
+      })(window); 
+    </script> 
+  </body>
+</html>
+
