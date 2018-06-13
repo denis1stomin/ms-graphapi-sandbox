@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/denis1stomin/ms-graphapi-sandbox#readme",
   "dependencies": {
-    "@microsoft/microsoft-graph-client": "^1.0.0"
+    "@microsoft/microsoft-graph-client": "^1.0.0",
+    "minimist": "^1.2.0"
   }
 }
